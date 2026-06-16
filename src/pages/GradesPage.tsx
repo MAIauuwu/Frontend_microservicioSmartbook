@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import { useAuth } from '../context/AuthContext';
 import { notaService } from '../services/notaService';
 import { estudianteService } from '../services/estudianteService';
 import { evaluacionService } from '../services/evaluacionService';
@@ -6,6 +7,9 @@ import type { Nota, Estudiante, Evaluacion } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
 
 export default function GradesPage() {
+  const { user } = useAuth();
+  const canEdit = user?.rol === 'ADMINISTRADOR' || user?.rol === 'DOCENTE';
+
   const [grades, setGrades] = useState<Nota[]>([]);
   const [students, setStudents] = useState<Estudiante[]>([]);
   const [evaluations, setEvaluations] = useState<Evaluacion[]>([]);
@@ -14,11 +18,7 @@ export default function GradesPage() {
   const [editing, setEditing] = useState<Nota | null>(null);
   const [formData, setFormData] = useState({ estudianteId: 0, evaluacionId: 0, nota: 0 });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       const [gradesData, studentsData, evaluationsData] = await Promise.all([
         notaService.getAll(),
@@ -33,7 +33,11 @@ export default function GradesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -78,10 +82,12 @@ export default function GradesPage() {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Notas</h1>
-        <button onClick={() => setShowModal(true)} className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700">
-          <Plus className="w-5 h-5 mr-2" /> Nueva Nota
-        </button>
+        <h1 className="text-2xl font-bold text-gray-900">Calificaciones</h1>
+        {canEdit && (
+          <button onClick={() => setShowModal(true)} className="flex items-center px-4 py-2 bg-pink-600 text-white rounded-md hover:bg-pink-700">
+            <Plus className="w-5 h-5 mr-2" /> Nueva Nota
+          </button>
+        )}
       </div>
 
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -90,9 +96,9 @@ export default function GradesPage() {
             <tr>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">ID</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Estudiante</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Evaluación</th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Evaluacion</th>
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Nota</th>
-              <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>
+              {canEdit && <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Acciones</th>}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -102,17 +108,19 @@ export default function GradesPage() {
                 <td className="px-6 py-4 text-sm text-gray-900">{getStudentName(g.estudianteId)}</td>
                 <td className="px-6 py-4 text-sm text-gray-500">{getEvaluationName(g.evaluacionId)}</td>
                 <td className="px-6 py-4 text-sm font-bold text-gray-900">{g.nota}</td>
-                <td className="px-6 py-4 text-right text-sm font-medium">
-                  <button onClick={() => { setEditing(g); setFormData({ estudianteId: g.estudianteId, evaluacionId: g.evaluacionId, nota: g.nota }); setShowModal(true); }} className="text-blue-600 hover:text-blue-900 mr-3"><Edit className="w-5 h-5 inline" /></button>
-                  <button onClick={() => handleDelete(g.id)} className="text-red-600 hover:text-red-900"><Trash2 className="w-5 h-5 inline" /></button>
-                </td>
+                {canEdit && (
+                  <td className="px-6 py-4 text-right text-sm font-medium">
+                    <button onClick={() => { setEditing(g); setFormData({ estudianteId: g.estudianteId, evaluacionId: g.evaluacionId, nota: g.nota }); setShowModal(true); }} className="text-blue-600 hover:text-blue-900 mr-3"><Edit className="w-5 h-5 inline" /></button>
+                    <button onClick={() => handleDelete(g.id)} className="text-red-600 hover:text-red-900"><Trash2 className="w-5 h-5 inline" /></button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>
         </table>
       </div>
 
-      {showModal && (
+      {showModal && canEdit && (
         <div className="fixed inset-0 bg-gray-600 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 w-full max-w-md">
             <div className="flex justify-between items-center mb-4">
@@ -125,7 +133,7 @@ export default function GradesPage() {
                 {students.map((s) => <option key={s.id} value={s.id}>{s.nombre} {s.apellido}</option>)}
               </select>
               <select value={formData.evaluacionId} onChange={(e) => setFormData({ ...formData, evaluacionId: Number(e.target.value) })} className="w-full px-3 py-2 border rounded-md" required>
-                <option value={0}>Seleccionar Evaluación</option>
+                <option value={0}>Seleccionar Evaluacion</option>
                 {evaluations.map((ev) => <option key={ev.id} value={ev.id}>{ev.nombre}</option>)}
               </select>
               <input type="number" step="0.01" min="0" max="10" placeholder="Nota" value={formData.nota} onChange={(e) => setFormData({ ...formData, nota: parseFloat(e.target.value) })} className="w-full px-3 py-2 border rounded-md" required />

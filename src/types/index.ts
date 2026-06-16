@@ -108,7 +108,7 @@ export interface RegisterRequest {
   rolNombre?: string;
 }
 
-export type UserRole = 'ADMINISTRADOR' | 'DOCENTE' | 'USUARIO';
+export type UserRole = 'ADMINISTRADOR' | 'DOCENTE' | 'ESTUDIANTE' | 'APODERADO' | 'USUARIO';
 
 // ==================== ACADEMICO MS ====================
 

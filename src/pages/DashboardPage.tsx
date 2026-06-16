@@ -41,6 +41,18 @@ const docenteStats: StatCard[] = [
   { label: 'Mensajes', icon: Mail, count: '--', color: 'bg-yellow-500', path: '/mensajes' },
 ];
 
+const estudianteStats: StatCard[] = [
+  { label: 'Calificaciones', icon: Award, count: '--', color: 'bg-pink-500', path: '/grades' },
+  { label: 'Mensajes', icon: Mail, count: '--', color: 'bg-blue-500', path: '/mensajes' },
+  { label: 'Notificaciones', icon: Bell, count: '--', color: 'bg-yellow-500', path: '/notificaciones' },
+];
+
+const apoderadoStats: StatCard[] = [
+  { label: 'Calificaciones', icon: Award, count: '--', color: 'bg-pink-500', path: '/grades' },
+  { label: 'Mensajes', icon: Mail, count: '--', color: 'bg-blue-500', path: '/mensajes' },
+  { label: 'Notificaciones', icon: Bell, count: '--', color: 'bg-yellow-500', path: '/notificaciones' },
+];
+
 const usuarioStats: StatCard[] = [
   { label: 'Calificaciones', icon: Award, count: '--', color: 'bg-pink-500', path: '/grades' },
   { label: 'Mensajes', icon: Mail, count: '--', color: 'bg-blue-500', path: '/mensajes' },
@@ -54,6 +66,8 @@ export default function DashboardPage() {
   const stats =
     rol === 'ADMINISTRADOR' ? adminStats :
     rol === 'DOCENTE' ? docenteStats :
+    rol === 'ESTUDIANTE' ? estudianteStats :
+    rol === 'APODERADO' ? apoderadoStats :
     usuarioStats;
 
   const welcomeMessage =
@@ -61,7 +75,11 @@ export default function DashboardPage() {
       ? 'Panel de administración. Gestiona usuarios, cursos y toda la plataforma educativa.'
       : rol === 'DOCENTE'
       ? 'Panel docente. Gestiona tus cursos, evaluaciones, calificaciones y asistencia.'
-      : 'Panel estudiantil. Revisa tus calificaciones, mensajes y notificaciones.';
+      : rol === 'ESTUDIANTE'
+      ? 'Panel de estudiante. Revisa tus calificaciones, mensajes y notificaciones.'
+      : rol === 'APODERADO'
+      ? 'Panel de apoderado. Revisa las calificaciones de tu pupilo, mensajes y notificaciones.'
+      : 'Revisa tus calificaciones, mensajes y notificaciones.';
 
   return (
     <div>

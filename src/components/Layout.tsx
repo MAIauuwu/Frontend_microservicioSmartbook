@@ -64,7 +64,7 @@ const navSections: NavSection[] = [
       { path: '/asignaturas', icon: FileText, label: 'Asignaturas', roles: ['ADMINISTRADOR', 'DOCENTE'] },
       { path: '/curso-asignaturas', icon: Link2, label: 'Asignaciones', roles: ['ADMINISTRADOR', 'DOCENTE'] },
       { path: '/evaluations', icon: ClipboardList, label: 'Evaluaciones', roles: ['ADMINISTRADOR', 'DOCENTE'] },
-      { path: '/grades', icon: Award, label: 'Calificaciones', roles: ['ADMINISTRADOR', 'DOCENTE', 'USUARIO'] },
+      { path: '/grades', icon: Award, label: 'Calificaciones' },
     ],
   },
   {
