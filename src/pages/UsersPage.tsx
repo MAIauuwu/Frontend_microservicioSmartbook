@@ -3,6 +3,7 @@ import { userService } from '../services/userService';
 import { roleService } from '../services/roleService';
 import type { User, Role } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/error';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -10,6 +11,7 @@ export default function UsersPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingUser, setEditingUser] = useState<User | null>(null);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ nombre: '', apellido: '', email: '', password: '', rolId: 0 });
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function UsersPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       if (editingUser) {
         await userService.update(editingUser.id, formData);
@@ -44,7 +47,7 @@ export default function UsersPage() {
       setFormData({ nombre: '', apellido: '', email: '', password: '', rolId: 0 });
       loadData();
     } catch (error) {
-      console.error('Error saving user:', error);
+      setError(getApiErrorMessage(error));
     }
   };
 
@@ -165,6 +168,9 @@ export default function UsersPage() {
                   <option key={role.id} value={role.id}>{role.nombre}</option>
                 ))}
               </select>
+              {error && (
+                <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+              )}
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   {editingUser ? 'Actualizar' : 'Crear'}

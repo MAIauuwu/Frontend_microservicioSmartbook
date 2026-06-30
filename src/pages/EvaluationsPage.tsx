@@ -3,6 +3,7 @@ import { evaluacionService } from '../services/evaluacionService';
 import { cursoService } from '../services/cursoService';
 import type { Evaluacion, Curso } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/error';
 
 export default function EvaluationsPage() {
   const [evaluations, setEvaluations] = useState<Evaluacion[]>([]);
@@ -10,6 +11,7 @@ export default function EvaluationsPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Evaluacion | null>(null);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ nombre: '', descripcion: '', cursoId: 0, fecha: '', puntajeMaximo: 100 });
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function EvaluationsPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       if (editing) {
         await evaluacionService.update(editing.id, formData);
@@ -44,7 +47,7 @@ export default function EvaluationsPage() {
       setFormData({ nombre: '', descripcion: '', cursoId: 0, fecha: '', puntajeMaximo: 100 });
       loadData();
     } catch (error) {
-      console.error('Error:', error);
+      setError(getApiErrorMessage(error));
     }
   };
 
@@ -114,6 +117,9 @@ export default function EvaluationsPage() {
                 <option value={0}>Seleccionar Curso</option>
                 {courses.map((c) => <option key={c.id} value={c.id}>{c.nombre}</option>)}
               </select>
+              {error && (
+                <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+              )}
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">{editing ? 'Actualizar' : 'Crear'}</button>
                 <button type="button" onClick={() => { setShowModal(false); setEditing(null); }} className="flex-1 py-2 bg-gray-300 rounded-md hover:bg-gray-400">Cancelar</button>

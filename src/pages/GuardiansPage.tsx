@@ -3,6 +3,7 @@ import { apoderadoService } from '../services/apoderadoService';
 import { roleService } from '../services/roleService';
 import type { Apoderado, Role } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/error';
 
 export default function GuardiansPage() {
   const [guardians, setGuardians] = useState<Apoderado[]>([]);
@@ -10,6 +11,7 @@ export default function GuardiansPage() {
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Apoderado | null>(null);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({
     nombre: '', apellido: '', email: '', password: '', rolId: 0,
     parentesco: '', telefono: '', direccion: '', documentoIdentidad: ''
@@ -36,6 +38,7 @@ export default function GuardiansPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       if (editing) {
         await apoderadoService.update(editing.id, formData);
@@ -47,7 +50,7 @@ export default function GuardiansPage() {
       setFormData({ nombre: '', apellido: '', email: '', password: '', rolId: 0, parentesco: '', telefono: '', direccion: '', documentoIdentidad: '' });
       loadData();
     } catch (error) {
-      console.error('Error:', error);
+      setError(getApiErrorMessage(error));
     }
   };
 
@@ -123,6 +126,9 @@ export default function GuardiansPage() {
                 <option value={0}>Seleccionar Rol</option>
                 {roles.map((r) => <option key={r.id} value={r.id}>{r.nombre}</option>)}
               </select>
+              {error && (
+                <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+              )}
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700">{editing ? 'Actualizar' : 'Crear'}</button>
                 <button type="button" onClick={() => { setShowModal(false); setEditing(null); }} className="flex-1 py-2 bg-gray-300 rounded-md hover:bg-gray-400">Cancelar</button>

@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { roleService } from '../services/roleService';
 import type { Role } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/error';
 
 export default function RolesPage() {
   const [roles, setRoles] = useState<Role[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingRole, setEditingRole] = useState<Role | null>(null);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ nombre: '' });
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function RolesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       if (editingRole) {
         await roleService.update(editingRole.id, formData);
@@ -38,7 +41,7 @@ export default function RolesPage() {
       setFormData({ nombre: '' });
       loadRoles();
     } catch (error) {
-      console.error('Error saving role:', error);
+      setError(getApiErrorMessage(error));
     }
   };
 
@@ -117,6 +120,9 @@ export default function RolesPage() {
                 className="w-full px-3 py-2 border rounded-md"
                 required
               />
+              {error && (
+                <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+              )}
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700">
                   {editingRole ? 'Actualizar' : 'Crear'}

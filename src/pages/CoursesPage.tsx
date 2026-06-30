@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { cursoService } from '../services/cursoService';
 import type { Curso } from '../types';
 import { Plus, Edit, Trash2, X } from 'lucide-react';
+import { getApiErrorMessage } from '../utils/error';
 
 export default function CoursesPage() {
   const [courses, setCourses] = useState<Curso[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState<Curso | null>(null);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ nombre: '', nivel: '', anio: new Date().getFullYear() });
 
   useEffect(() => {
@@ -27,6 +29,7 @@ export default function CoursesPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       if (editing) {
         await cursoService.update(editing.id, formData);
@@ -38,7 +41,7 @@ export default function CoursesPage() {
       setFormData({ nombre: '', nivel: '', anio: new Date().getFullYear() });
       loadCourses();
     } catch (error) {
-      console.error('Error:', error);
+      setError(getApiErrorMessage(error));
     }
   };
 
@@ -103,6 +106,9 @@ export default function CoursesPage() {
               <input type="text" placeholder="Nombre" value={formData.nombre} onChange={(e) => setFormData({ ...formData, nombre: e.target.value })} className="w-full px-3 py-2 border rounded-md" required />
               <input type="text" placeholder="Nivel" value={formData.nivel} onChange={(e) => setFormData({ ...formData, nivel: e.target.value })} className="w-full px-3 py-2 border rounded-md" required />
               <input type="number" placeholder="Año" value={formData.anio} onChange={(e) => setFormData({ ...formData, anio: Number(e.target.value) })} className="w-full px-3 py-2 border rounded-md" required />
+              {error && (
+                <div className="p-3 bg-red-100 text-red-700 rounded-md text-sm">{error}</div>
+              )}
               <div className="flex gap-2">
                 <button type="submit" className="flex-1 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">{editing ? 'Actualizar' : 'Crear'}</button>
                 <button type="button" onClick={() => { setShowModal(false); setEditing(null); }} className="flex-1 py-2 bg-gray-300 rounded-md hover:bg-gray-400">Cancelar</button>
